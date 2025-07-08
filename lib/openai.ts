@@ -1,12 +1,15 @@
 import OpenAI from 'openai'
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY environment variable')
+// OpenAI 인스턴스를 lazy하게 생성하는 함수
+function getOpenAIClient(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('Missing OPENAI_API_KEY environment variable')
+  }
+  
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
 }
-
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
 
 export const MODEL = process.env.OPENAI_MODEL || 'gpt-4.1'
 
@@ -59,6 +62,8 @@ export async function createCompletion(
   systemPrompt?: string
 ): Promise<string> {
   try {
+    const openai = getOpenAIClient() // 실제 사용 시점에 인스턴스 생성
+    
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = []
     
     if (systemPrompt) {
@@ -97,6 +102,8 @@ export async function createChatCompletion(
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[]
 ): Promise<string> {
   try {
+    const openai = getOpenAIClient() // 실제 사용 시점에 인스턴스 생성
+    
     const completion = await openai.chat.completions.create({
       model: MODEL,
       messages,
